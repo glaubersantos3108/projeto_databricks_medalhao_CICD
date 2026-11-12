@@ -1,0 +1,126 @@
+# Definição do Workflow no Databricks
+resources:
+  jobs:
+    pipeline_medalhao_job:
+      name: pipeline_medalhao_job_${bundle.target}
+
+      email_notifications:
+        on_failure:
+          - lugus90@outlook.com
+
+      tasks:
+        # --- BRONZE: ingestão das tabelas (em paralelo) ---
+        - task_key: brands_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/brands_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: categories_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/categories_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: customers_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/customers_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: order_items_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/order_items_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: orders_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/orders_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: products_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/products_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: staffs_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/staffs_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: stocks_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/stocks_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: stores_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/stores_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # --- VALIDAÇÃO DA BRONZE: espera todas as ingestões ---
+        - task_key: validate_camada_bronze
+          depends_on:
+            - task_key: brands_bronze
+            - task_key: categories_bronze
+            - task_key: customers_bronze
+            - task_key: order_items_bronze
+            - task_key: orders_bronze
+            - task_key: products_bronze
+            - task_key: staffs_bronze
+            - task_key: stocks_bronze
+            - task_key: stores_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/bronze/validate_camada_bronze.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # --- SILVER ---
+        - task_key: customers_silver
+          depends_on:
+            - task_key: validate_camada_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/silver/customers_silver.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: orders_silver
+          depends_on:
+            - task_key: validate_camada_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/silver/orders_silver.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: products_silver
+          depends_on:
+            - task_key: validate_camada_bronze
+          notebook_task:
+            notebook_path: ../src/notebooks/silver/products_silver.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        - task_key: validate_camada_silver
+          depends_on:
+            - task_key: customers_silver
+            - task_key: orders_silver
+            - task_key: products_silver
+          notebook_task:
+            notebook_path: ../src/notebooks/silver/validate_camada_silver.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # --- GOLD ---
+        - task_key: orders_gold
+          depends_on:
+            - task_key: validate_camada_silver
+          notebook_task:
+            notebook_path: ../src/notebooks/gold/orders_gold.ipynb
+            base_parameters:
+              catalog: ${var.catalog}
