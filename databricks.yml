@@ -27,11 +27,13 @@ targets:
     mode: production
     workspace:
       host: https://adb-7405610072692977.17.azuredatabricks.net
-      root_path: /Workspace/Users/lugus90@outlook.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Users/f0ae48cc-7cde-404d-8798-56ac78d6b27f/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: lugus_databricks_prod
     permissions:
       - user_name: lugus90@outlook.com
         level: CAN_MANAGE
+      - service_principal_name: f0ae48cc-7cde-404d-8798-56ac78d6b27f
+        level: CAN_MANAGE
     run_as:
-      service_principal_name: 2d765b3b-3f57-4a07-be51-85fbb55836d3
+      service_principal_name: f0ae48cc-7cde-404d-8798-56ac78d6b27f
